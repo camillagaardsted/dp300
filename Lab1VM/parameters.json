@@ -130,7 +130,7 @@
             "value": "dbadmin"
         },
         "adminPassword": {
-            "value": "GEN-KEYVAULT-PASSWORD-REFERENCE"
+            "value": "DummyPassword1234!"
         },
         "patchMode": {
             "value": "AutomaticByOS"
