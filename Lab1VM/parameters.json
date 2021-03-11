@@ -130,7 +130,7 @@
             "value": "dbadmin"
         },
         "adminPassword": {
-            "value": null
+            "value": ""
         },
         "patchMode": {
             "value": "AutomaticByOS"
