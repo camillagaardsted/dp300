@@ -358,8 +358,8 @@
                     "SQLConnectivityUpdateSettings": {
                         "ConnectivityType": "[parameters('sqlConnectivityType')]",
                         "Port": "[parameters('sqlPortNumber')]",
-                        "SQLAuthUpdateUserName": "Dummy",
-                        "SQLAuthUpdatePassword": "NotUsed1234!"
+                        "SQLAuthUpdateUserName": "",
+                        "SQLAuthUpdatePassword": ""
                     },
                     "AdditionalFeaturesServerConfigurations": {
                         "IsRServicesEnabled": "[parameters('rServicesEnabled')]"
