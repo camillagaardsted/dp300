@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
-            "value": "westeurope"
+            "value": "eastus"
         },
         "networkInterfaceName": {
             "value": "sql-dev177"
@@ -154,7 +154,7 @@
             "value": "en"
         },
         "sqlVirtualMachineLocation": {
-            "value": "westeurope"
+            "value": "eastus"
         },
         "sqlVirtualMachineName": {
             "value": "sql-dev"
