@@ -141,7 +141,7 @@
             "value": "sqladmin"
         },
         "adminPassword": {
-            "value": null
+            "value": "SuperUsers1234!!"
         },
         "patchMode": {
             "value": "AutomaticByOS"
