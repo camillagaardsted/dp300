@@ -3,16 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "location": {
-            "value": "eastus"
+            "value": "westeurope"
         },
         "networkInterfaceName": {
-            "value": "sql-dev177"
+            "value": "azuresqlservervm497"
         },
         "enableAcceleratedNetworking": {
             "value": true
         },
         "networkSecurityGroupName": {
-            "value": "sql-dev-nsg"
+            "value": "azureSQLServerVM-nsg"
         },
         "networkSecurityGroupRules": {
             "value": [
@@ -28,6 +28,19 @@
                         "destinationAddressPrefix": "*",
                         "destinationPortRange": "3389"
                     }
+                },
+                {
+                    "name": "default-allow-sql",
+                    "properties": {
+                        "priority": 1600,
+                        "protocol": "TCP",
+                        "access": "Allow",
+                        "direction": "Inbound",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "1433"
+                    }
                 }
             ]
         },
@@ -35,11 +48,11 @@
             "value": "default"
         },
         "virtualNetworkName": {
-            "value": "dp300kursus-vnet"
+            "value": "vnet-superusers"
         },
         "addressPrefixes": {
             "value": [
-                "10.1.0.0/24"
+                "10.1.0.0/16"
             ]
         },
         "subnets": {
@@ -53,35 +66,42 @@
             ]
         },
         "publicIpAddressName": {
-            "value": "sql-dev-ip"
+            "value": "azureSQLServerVM-ip"
         },
         "publicIpAddressType": {
-            "value": "Dynamic"
+            "value": "Static"
         },
         "publicIpAddressSku": {
-            "value": "Basic"
+            "value": "Standard"
+        },
+        "pipDeleteOption": {
+            "value": "Detach"
         },
         "virtualMachineName": {
-            "value": "sql-dev"
+            "value": "azureSQLServerVM"
         },
         "virtualMachineComputerName": {
-            "value": "sql-dev"
+            "value": "azureSQLServerV"
         },
         "virtualMachineRG": {
-            "value": "dp300kursus"
+            "value": "dk"
         },
         "osDiskType": {
             "value": "Premium_LRS"
+        },
+        "osDiskDeleteOption": {
+            "value": "Delete"
         },
         "dataDisks": {
             "value": [
                 {
                     "lun": 0,
                     "createOption": "attach",
+                    "deleteOption": "Detach",
                     "caching": "ReadOnly",
                     "writeAcceleratorEnabled": false,
                     "id": null,
-                    "name": "sql-dev_DataDisk_0",
+                    "name": "azureSQLServerVM_DataDisk_0",
                     "storageAccountType": null,
                     "diskSizeGB": null,
                     "diskEncryptionSet": null
@@ -89,10 +109,11 @@
                 {
                     "lun": 1,
                     "createOption": "attach",
+                    "deleteOption": "Detach",
                     "caching": "None",
                     "writeAcceleratorEnabled": false,
                     "id": null,
-                    "name": "sql-dev_DataDisk_1",
+                    "name": "azureSQLServerVM_DataDisk_1",
                     "storageAccountType": null,
                     "diskSizeGB": null,
                     "diskEncryptionSet": null
@@ -102,7 +123,7 @@
         "dataDiskResources": {
             "value": [
                 {
-                    "name": "sql-dev_DataDisk_0",
+                    "name": "azureSQLServerVM_DataDisk_0",
                     "sku": "Premium_LRS",
                     "properties": {
                         "diskSizeGB": 8,
@@ -112,7 +133,7 @@
                     }
                 },
                 {
-                    "name": "sql-dev_DataDisk_1",
+                    "name": "azureSQLServerVM_DataDisk_1",
                     "sku": "Premium_LRS",
                     "properties": {
                         "diskSizeGB": 8,
@@ -124,16 +145,19 @@
             ]
         },
         "virtualMachineSize": {
-            "value": "Standard_DS3_v2"
+            "value": "Standard_D2s_v3"
+        },
+        "nicDeleteOption": {
+            "value": "Detach"
         },
         "adminUsername": {
-            "value": "dbadmin"
+            "value": "sqladmin"
         },
         "adminPassword": {
-            "value": "DummyPassword1234!"
+            "value": null
         },
         "patchMode": {
-            "value": "AutomaticByOS"
+            "value": "Manual"
         },
         "enableHotpatching": {
             "value": false
@@ -154,13 +178,13 @@
             "value": "en"
         },
         "sqlVirtualMachineLocation": {
-            "value": "eastus"
+            "value": "westeurope"
         },
         "sqlVirtualMachineName": {
-            "value": "sql-dev"
+            "value": "azureSQLServerVM"
         },
         "sqlConnectivityType": {
-            "value": "Private"
+            "value": "Public"
         },
         "sqlPortNumber": {
             "value": 1433
@@ -178,7 +202,7 @@
             "value": 2
         },
         "sqlStorageDeploymentToken": {
-            "value": 85165
+            "value": 86189
         },
         "sqlAutopatchingDayOfWeek": {
             "value": "Sunday"
@@ -208,8 +232,47 @@
         "tempDbPath": {
             "value": "D:\\tempDb"
         },
+        "dataFileCount": {
+            "value": 2
+        },
+        "dataFileSize": {
+            "value": 8
+        },
+        "dataGrowth": {
+            "value": 64
+        },
+        "logFileSize": {
+            "value": 8
+        },
+        "logGrowth": {
+            "value": 64
+        },
+        "SQLSystemDbOnDataDisk": {
+            "value": false
+        },
         "rServicesEnabled": {
             "value": "false"
+        },
+        "maxdop": {
+            "value": 0
+        },
+        "isOptimizeForAdHocWorkloadsEnabled": {
+            "value": false
+        },
+        "collation": {
+            "value": "SQL_Latin1_General_CP1_CI_AS"
+        },
+        "minServerMemoryMB": {
+            "value": 0
+        },
+        "maxServerMemoryMB": {
+            "value": 2147483647
+        },
+        "isLPIMEnabled": {
+            "value": false
+        },
+        "isIFIEnabled": {
+            "value": false
         }
     }
 }

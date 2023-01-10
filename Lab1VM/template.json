@@ -38,6 +38,9 @@
         "publicIpAddressSku": {
             "type": "string"
         },
+        "pipDeleteOption": {
+            "type": "string"
+        },
         "virtualMachineName": {
             "type": "string"
         },
@@ -50,6 +53,9 @@
         "osDiskType": {
             "type": "string"
         },
+        "osDiskDeleteOption": {
+            "type": "string"
+        },
         "dataDisks": {
             "type": "array"
         },
@@ -57,6 +63,9 @@
             "type": "array"
         },
         "virtualMachineSize": {
+            "type": "string"
+        },
+        "nicDeleteOption": {
             "type": "string"
         },
         "adminUsername": {
@@ -137,12 +146,52 @@
         "tempDbPath": {
             "type": "string"
         },
+        "dataFileCount": {
+            "type": "int"
+        },
+        "dataFileSize": {
+            "type": "int"
+        },
+        "dataGrowth": {
+            "type": "int"
+        },
+        "logFileSize": {
+            "type": "int"
+        },
+        "logGrowth": {
+            "type": "int"
+        },
+        "SQLSystemDbOnDataDisk": {
+            "type": "bool"
+        },
         "rServicesEnabled": {
             "type": "string"
+        },
+        "maxdop": {
+            "type": "int"
+        },
+        "isOptimizeForAdHocWorkloadsEnabled": {
+            "type": "bool"
+        },
+        "collation": {
+            "type": "string"
+        },
+        "minServerMemoryMB": {
+            "type": "int"
+        },
+        "maxServerMemoryMB": {
+            "type": "int"
+        },
+        "isLPIMEnabled": {
+            "type": "bool"
+        },
+        "isIFIEnabled": {
+            "type": "bool"
         }
     },
     "variables": {
         "nsgId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]",
+        "vnetName": "[parameters('virtualNetworkName')]",
         "vnetId": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
     },
@@ -150,7 +199,7 @@
         {
             "name": "[parameters('networkInterfaceName')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2021-08-01",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]",
@@ -167,7 +216,10 @@
                             },
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIpAddress": {
-                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]",
+                                "properties": {
+                                    "deleteOption": "[parameters('pipDeleteOption')]"
+                                }
                             }
                         }
                     }
@@ -176,6 +228,9 @@
                 "networkSecurityGroup": {
                     "id": "[variables('nsgId')]"
                 }
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
@@ -185,36 +240,45 @@
             "location": "[parameters('location')]",
             "properties": {
                 "securityRules": "[parameters('networkSecurityGroupRules')]"
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
             "name": "[parameters('virtualNetworkName')]",
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2019-09-01",
+            "apiVersion": "2021-01-01",
             "location": "[parameters('location')]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": "[parameters('addressPrefixes')]"
                 },
                 "subnets": "[parameters('subnets')]"
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
             "name": "[parameters('publicIpAddressName')]",
             "type": "Microsoft.Network/publicIpAddresses",
-            "apiVersion": "2019-02-01",
+            "apiVersion": "2020-08-01",
             "location": "[parameters('location')]",
             "properties": {
                 "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
             },
             "sku": {
                 "name": "[parameters('publicIpAddressSku')]"
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
             "name": "[parameters('dataDiskResources')[copyIndex()].name]",
             "type": "Microsoft.Compute/disks",
-            "apiVersion": "2020-09-30",
+            "apiVersion": "2022-03-02",
             "location": "[parameters('location')]",
             "properties": "[parameters('dataDiskResources')[copyIndex()].properties]",
             "sku": {
@@ -223,12 +287,15 @@
             "copy": {
                 "name": "managedDiskResources",
                 "count": "[length(parameters('dataDiskResources'))]"
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
             "name": "[parameters('virtualMachineName')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "apiVersion": "2020-12-01",
+            "apiVersion": "2022-03-01",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "managedDiskResources",
@@ -243,12 +310,13 @@
                         "createOption": "fromImage",
                         "managedDisk": {
                             "storageAccountType": "[parameters('osDiskType')]"
-                        }
+                        },
+                        "deleteOption": "[parameters('osDiskDeleteOption')]"
                     },
                     "imageReference": {
                         "publisher": "microsoftsqlserver",
-                        "offer": "sql2019-ws2019",
-                        "sku": "sqldev",
+                        "offer": "sql2022-ws2022",
+                        "sku": "sqldev-gen2",
                         "version": "latest"
                     },
                     "copy": [
@@ -264,6 +332,7 @@
                                     "id": "[coalesce(parameters('dataDisks')[copyIndex('dataDisks')].id, if(equals(parameters('dataDisks')[copyIndex('dataDisks')].name, json('null')), json('null'), resourceId('Microsoft.Compute/disks', parameters('dataDisks')[copyIndex('dataDisks')].name)))]",
                                     "storageAccountType": "[parameters('dataDisks')[copyIndex('dataDisks')].storageAccountType]"
                                 },
+                                "deleteOption": "[parameters('dataDisks')[copyIndex('dataDisks')].deleteOption]",
                                 "writeAcceleratorEnabled": "[parameters('dataDisks')[copyIndex('dataDisks')].writeAcceleratorEnabled]"
                             }
                         }
@@ -272,17 +341,19 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]",
+                            "properties": {
+                                "deleteOption": "[parameters('nicDeleteOption')]"
+                            }
                         }
                     ]
                 },
-                "securityProfile": {},
                 "osProfile": {
                     "computerName": "[parameters('virtualMachineComputerName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
                     "windowsConfiguration": {
-                        "enableAutomaticUpdates": true,
+                        "enableAutomaticUpdates": false,
                         "provisionVmAgent": true,
                         "patchSettings": {
                             "enableHotpatching": "[parameters('enableHotpatching')]",
@@ -295,12 +366,15 @@
                         "enabled": true
                     }
                 }
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
             "name": "[concat('shutdown-computevm-', parameters('virtualMachineName'))]",
             "type": "Microsoft.DevTestLab/schedules",
-            "apiVersion": "2017-04-26-preview",
+            "apiVersion": "2018-09-15",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
@@ -318,12 +392,15 @@
                     "notificationLocale": "[parameters('autoShutdownNotificationLocale')]",
                     "timeInMinutes": "30"
                 }
+            },
+            "tags": {
+                "Kursus": "DP300"
             }
         },
         {
             "name": "[parameters('sqlVirtualMachineName')]",
             "type": "Microsoft.SqlVirtualMachine/SqlVirtualMachines",
-            "apiVersion": "2017-03-01-preview",
+            "apiVersion": "2021-11-01-preview",
             "location": "[parameters('sqlVirtualMachineLocation')]",
             "properties": {
                 "virtualMachineResourceId": "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlVirtualMachineName'))]",
@@ -351,8 +428,14 @@
                         "DefaultFilePath": "[parameters('logPath')]"
                     },
                     "SQLTempDbSettings": {
-                        "DefaultFilePath": "[parameters('tempDbPath')]"
-                    }
+                        "DefaultFilePath": "[parameters('tempDbPath')]",
+                        "DataFileCount": "[parameters('dataFileCount')]",
+                        "DataFileSize": "[parameters('dataFileSize')]",
+                        "DataGrowth": "[parameters('dataGrowth')]",
+                        "LogFileSize": "[parameters('logFileSize')]",
+                        "LogGrowth": "[parameters('logGrowth')]"
+                    },
+                    "SQLSystemDbOnDataDisk": "[parameters('SQLSystemDbOnDataDisk')]"
                 },
                 "ServerConfigurationsManagementSettings": {
                     "SQLConnectivityUpdateSettings": {
@@ -363,12 +446,24 @@
                     },
                     "AdditionalFeaturesServerConfigurations": {
                         "IsRServicesEnabled": "[parameters('rServicesEnabled')]"
+                    },
+                    "SQLInstanceSettings": {
+                        "maxDop": "[parameters('maxdop')]",
+                        "isOptimizeForAdHocWorkloadsEnabled": "[parameters('isOptimizeForAdHocWorkloadsEnabled')]",
+                        "collation": "[parameters('collation')]",
+                        "minServerMemoryMB": "[parameters('minServerMemoryMB')]",
+                        "maxServerMemoryMB": "[parameters('maxServerMemoryMB')]",
+                        "isLPIMEnabled": "[parameters('isLPIMEnabled')]",
+                        "isIFIEnabled": "[parameters('isIFIEnabled')]"
                     }
                 }
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('sqlVirtualMachineName'))]"
-            ]
+            ],
+            "tags": {
+                "Kursus": "DP300"
+            }
         }
     ],
     "outputs": {
