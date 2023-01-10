@@ -16,6 +16,7 @@ cd c:\DP300Kursus
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/camillagaardsted/dp300/main/Lab1VM/parameters.json  -OutFile parameters.json
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/camillagaardsted/dp300/main/Lab1VM/template.json  -OutFile template.json
 
+#This line works fine - when the files are locally
 New-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -TemplateParameterFile parameters.json -TemplateFile template.json -adminPassword $adminPassword
 
 # This line fails - if I try to deploy directly with the two files from GitHub
